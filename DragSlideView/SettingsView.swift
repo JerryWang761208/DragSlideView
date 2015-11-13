@@ -10,6 +10,7 @@ import UIKit
 
 class SettingsView: FXBlurView {
     //MARK: Properties
+      var offset = CGPoint.zero
     var animator : UIDynamicAnimator!
     var container : UICollisionBehavior!
         var slidingAttachment : UIAttachmentBehavior! //Or say container
@@ -59,7 +60,7 @@ class SettingsView: FXBlurView {
     }
     func handlePan(pan : UIPanGestureRecognizer) {
         let velocity = pan.velocityInView(self.superview).y
-        
+         var location = pan.locationInView(self.superview!)
         var movement = self.frame
         movement.origin.x = 0
         movement.origin.y = movement.origin.y + (velocity * 0.05)
@@ -68,10 +69,32 @@ class SettingsView: FXBlurView {
         if pan.state == .Ended{
             panGestureEnded()
         }else if pan.state == .Began {
+            let center = self.center
+            offset.y = location.y - center.y
             snapToBottom()
         }else{
             animator.removeBehavior(snap)
-            snap = UISnapBehavior(item: self, snapToPoint: CGPointMake(CGRectGetMidX(movement), CGRectGetMidY(movement)))
+            //snap = UISnapBehavior(item: self, snapToPoint: CGPointMake(CGRectGetMidX(movement), CGRectGetMidY(movement)))
+            
+            
+                        let referenceBounds = self.superview!.bounds
+                        let referenceHeight = referenceBounds.height
+            
+                        // Get item bounds.
+                        let itemBounds = self.bounds
+                        let itemHalfHeight = itemBounds.height / 2.0
+            
+                        // Apply the initial offset.
+                        location.x -= offset.x
+                        location.y -= offset.y
+            
+                        // Bound the item position inside the reference view.
+                        location.x = self.superview!.frame.width / 2
+                        //location.y = max(itemHalfHeight, location.y)
+                        //location.y = min(referenceHeight - itemHalfHeight, location.y)
+                        // Apply the resulting item center.
+                        snap = UISnapBehavior(item: self, snapToPoint: location)
+            
             animator.addBehavior(snap)
         }
         
